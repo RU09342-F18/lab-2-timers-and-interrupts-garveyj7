@@ -3,15 +3,15 @@
  *
  *  Created on: Sep 27, 2018
  *  Last Edited: Sept 28, 2018
- *      Author: John Garvey
+ *  Author: John Garvey
  */
 
 #include <msp430f5529.h>
 
+// Define LED for ease of use inside main code
 #define LED BIT0
 
 int main(void)
-
 {
     // Stop watchdog
     WDTCTL = WDTPW | WDTHOLD;
@@ -38,11 +38,12 @@ int main(void)
     // Loop infinitely
     while (1){}
 }
-// Timer Interrupt
+// Timer Interrupt (CCR0 triggered)
 #pragma vector = TIMER0_A0_VECTOR
 __interrupt void Timer_A ()
 {
-       P1OUT ^= LED; //Toggles PIN 1.0 (RED LED) on/off
+       // Toggle LED
+       P1OUT ^= LED;
 }
 
 // Button Interrupt
