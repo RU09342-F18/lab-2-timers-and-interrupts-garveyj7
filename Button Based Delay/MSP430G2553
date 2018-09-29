@@ -3,45 +3,42 @@
  *
  *  Created on: Sep 23, 2018
  *  Last Edited: Sept 28, 2018
- *      Author: John Garvey
+ *  Author: John Garvey
  */
 
 #include <msp430.h> 
 
+//Define LED for ease of use in main
 #define LED BIT0
 
 int main(void)
 {
-    // stop watchdog timer
+    // Stop watchdog
     WDTCTL = WDTPW | WDTHOLD;
     // Enable internal oscillator for clock
     BCSCTL3 = LFXT1S_2;
-
     // Sets Pins 1.0
     P1DIR |= LED;
     // Sets Pin 1.3 to be pull up/down enabled
     P1REN |= BIT3;
     // Sets Pin 1.3 to pull up resistor
     P1OUT |= BIT3;
-
     // Enable interrupt on button
     P1IE |= BIT3;
     // Enable high to low on interrupt
     P1IES |= BIT3;
-
     // CCR0 interrupt enabled
     CCTL0 = CCIE;
     // Sets initial blink frequency
     CCR0 =  100;
-    // SMCLK selected + Up mode + Input divider -> divide clock by 4
+    // SMCLK selected + Up mode + Input divider as 4
     TACTL = TASSEL_1 + MC_1 + ID_3;
-
     // Enable interrupts
      __enable_interrupt();
     // Loop infinitely
     while (1){}
 }
-//Timer Interrupt
+//Timer Interrupt (CCR0 triggered)
 #pragma vector = TIMER0_A0_VECTOR
 __interrupt void Timer_A ()
 {
@@ -49,7 +46,7 @@ __interrupt void Timer_A ()
     P1OUT ^= LED;
 }
 
-// Button press interrupt
+// Button interrupt (Button pressed)
 #pragma vector=PORT1_VECTOR
 __interrupt void Port_1(void)
 {
@@ -68,7 +65,7 @@ __interrupt void Port_1(void)
     {
         // Sync CCR0 with TA0R clock
         CCR0 = TA0R;
-        // TImer A = A clock + Up mode, Divide clock by 4
+        // Timer A = A clock + Up mode, Divide clock by 4
         TACTL = TASSEL_1 + MC_1 + ID_3;
         // Enable interrupt
         P1IES |= BIT3;
