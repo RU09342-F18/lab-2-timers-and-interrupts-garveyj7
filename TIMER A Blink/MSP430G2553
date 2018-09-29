@@ -1,0 +1,61 @@
+/*
+ * MSP430G2553_TimerDelay.c
+ *
+ *  Created on: Sep 25, 2018
+ *  Last Edited: Sept 28, 2018
+ *      Author: John Garvey
+ */
+
+#include <msp430.h>
+
+#define LED0 BIT0
+#define LED1 BIT6
+
+int main(void)
+{
+    // Stop watchdog
+    WDTCTL = WDTPW | WDTHOLD;
+    //Enables internal oscillator for the clock
+    BCSCTL3 = LFXT1S_2;
+    // Set LEDs to be outputs
+    P1DIR |= (LED0 | LED1);
+    // Enable pull up/down resistor on button (1.3)
+    P1REN |= BIT3;
+    // Set button (1.3) as pull up
+    P1OUT |= BIT3;
+    // Set LEDs to be on
+    P1OUT |= LED0;
+    P1OUT &= ~LED1;
+    // Enable interrupt on button (1.3)
+    P1IE |= BIT3;
+    // Enable high to low on interrupt
+    P1IES |= BIT3;
+    // Enable CCR0
+    CCTL0 = CCIE;
+    // Set frequency
+    CCR0 =  1000;
+    // Select ACLK + Up mode + Internal divider
+    TACTL = TASSEL_1 + MC_1 + ID_3;  // ACLK selected, Up-Count Enabled, Internal Divider = 8
+    // Enable interrupts
+    __enable_interrupt();
+    // Loop infinitely
+    while (1){}
+}
+
+// Timer interrupt (CCR0 triggered)
+#pragma vector = TIMER0_A0_VECTOR
+__interrupt void Timer_A ()
+{
+        // Toggle LEDs
+        P1OUT ^= (LED0 | LED1);
+}
+
+// Button interrupt (Button is pressed)
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void)
+{
+    // Decrease CCR0 by 100 (Speed up blinking)
+    CCR0 -= 100;
+    // Clear interrupt flag
+    P1IFG &= ~BIT3;
+}
