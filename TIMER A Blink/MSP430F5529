@@ -1,0 +1,58 @@
+/*
+ * MSP430F5529_TimerABlink.c
+ *
+ *  Created on: Sept. 25, 2018
+ *  Last Edited: Sept. 28, 2018
+ *  Author: John Garvey
+ */
+
+#include <msp430f5529.h>
+
+// Define LED for ease of use inside code
+#define LED BIT0
+
+int main(void)
+
+{
+    // Stop watchdog
+    WDTCTL = WDTPW | WDTHOLD;
+    // Set LED as output
+    P1DIR |= LED;
+    // Enable pull up/down resistor on button
+    P1REN |= BIT1;
+    // Select pull up resistor
+    P1OUT |= BIT1;
+    // Set LED on initially
+    P1OUT |= LED;
+    // Enable interrupt on button
+    P1IE |= BIT1;
+    // Enable high to low on button
+    P1IES |= BIT1;
+    // Enable CCR0
+    TA0CCTL0 = CCIE;
+    // Set initial Frequency
+    TA0CCR0 =  1000;
+    // Select TACLK + Up mode + internal divider as 2
+    TA0CTL = TASSEL_1 + MC_1 + ID_3;
+    // Enable interrupts
+    __enable_interrupt();
+    // Loop infinitely
+    while (1){}
+}
+// Timer Interrupt
+#pragma vector = TIMER0_A0_VECTOR
+__interrupt void Timer_A ()
+{
+    // Toggle LED on/off   
+    P1OUT ^= LED;
+}
+
+// Button Interrupt
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void)
+{
+    // Decrease CCR0 by 100 (Speed up blinking)
+    TA0CCR0 -= 100;
+    // Clear interrupt flag
+    P1IFG &= ~BIT1;
+}
