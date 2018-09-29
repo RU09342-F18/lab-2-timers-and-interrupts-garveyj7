@@ -1,0 +1,65 @@
+/*
+ * MSP430FR2311_ButtonInterrupt.c
+ *
+ *  Created on: Sep 22, 2018
+ *  Last Edited: Sept 28, 2018
+ *      Author: John Garvey
+ */
+
+#include <msp430.h> 
+
+int main(void)
+{
+    // Stop watchdog timer
+
+    WDTCTL = WDTPW | WDTHOLD;
+    // Sets Pin 1.0 to be output
+    P1DIR |= BIT0;
+
+    PM5CTL0 &= ~LOCKLPM5;
+
+    // Sets Pin 1.1 to be pull up/down enabled
+    P1REN |= BIT1;
+    // Sets Pin 1.1 to pull up resistor
+    P1OUT |= BIT1;
+
+    // Set LEDs off initially
+    P1OUT |= BIT0;
+
+    // Enables interrupt on button
+    P1IE |= BIT1;
+    // Enables high - to - low behavior on interrupt
+    P1IES |= BIT1;
+
+    // SMCLK selected, Continuous enabled Divider = 4
+    TB0CTL = TBSSEL_2 | MC_3 | ID_2;
+
+    // CCR0 interrupt enabled
+    TB0CCTL0 = CCIE;
+    //Sets frequency
+    TB0CCR0 = 10000;
+
+    // Enable interrupts
+    __enable_interrupt();
+
+    // Loop infinitely
+    while (1){}
+}
+
+// Timer Interrupt
+#pragma vector = TIMER0_B0_VECTOR
+    __interrupt void Timer_A ()
+    {
+        // Toggle LEDs
+        P1OUT ^= BIT0;
+    }
+
+// Button press Interrupt
+#pragma vector = PORT1_VECTOR
+__interrupt void Port_1(void)
+{
+
+    TB0CCR0 -= 10000;
+    // Remove flag
+    P1IFG &= ~BIT1;
+}
