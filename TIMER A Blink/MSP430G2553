@@ -36,8 +36,8 @@ int main(void)
     CCTL0 = CCIE;
     // Set frequency
     CCR0 =  1000;
-    // Select ACLK + Up mode + Internal divider
-    TACTL = TASSEL_1 + MC_1 + ID_3;  // ACLK selected, Up-Count Enabled, Internal Divider = 8
+    // Select ACLK + Up mode + Internal divider = 8
+    TACTL = TASSEL_1 + MC_1 + ID_3;
     // Enable interrupts
     __enable_interrupt();
     // Loop infinitely
