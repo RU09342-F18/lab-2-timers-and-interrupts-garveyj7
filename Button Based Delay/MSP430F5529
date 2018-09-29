@@ -1,0 +1,74 @@
+/*
+ * MSP430F5529_ButtonBasedDelay.c
+ *
+ *  Created on: Sep 27, 2018
+ *  Last Edited: Sept 28, 2018
+ *      Author: John Garvey
+ */
+
+#include <msp430f5529.h>
+
+#define LED BIT0
+
+int main(void)
+
+{
+    // Stop watchdog
+    WDTCTL = WDTPW | WDTHOLD;
+    // Set LED as output
+    P1DIR |= LED;
+    // Enable pull up/down resistor on button
+    P1REN |= BIT1;
+    // Select pull up resistor
+    P1OUT |= BIT1;
+    // Set LED on initially
+    P1OUT |= LED;
+    // Enable interrupt on button
+    P1IE |= BIT1;
+    // Enable high to low on button
+    P1IES |= BIT1;
+    // Enable CCR0
+    TA0CCTL0 = CCIE;
+    // Set initial Frequency
+    TA0CCR0 =  100;
+    // Select TACLK + Up mode + internal divider as 2
+    TA0CTL = TASSEL_0 + MC_1 + ID_1;
+    // Enable interrupts
+    __enable_interrupt();
+    // Loop infinitely
+    while (1){}
+}
+// Timer Interrupt
+#pragma vector = TIMER0_A0_VECTOR
+__interrupt void Timer_A ()
+{
+       P1OUT ^= LED; //Toggles PIN 1.0 (RED LED) on/off
+}
+
+// Button Interrupt
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void)
+{
+    // Button pressed
+    if (P1IES & BIT1)
+    {
+        // Clear timer A
+        TA0CTL = TACLR;
+        // Timer A = A clock + Continuous mode + Divide clock by 4
+        TA0CTL = TASSEL_1 + MC_2 + ID_3;
+        // Disable interrupt enable
+        P1IES &= ~BIT1;
+    }
+    // Button released
+    else
+    {
+        // Sync CCR0 with TA0R clock
+        TA0CCR0 = TA0R;
+        // TImer A = A clock + Up mode, Divide clock by 4
+        TA0CTL = TASSEL_1 + MC_1 + ID_3;
+        // Enable interrupt
+        P1IES |= BIT1;
+    }
+    // Clear interrupt flag
+    P1IFG &= ~BIT1;
+}
