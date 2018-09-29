@@ -8,6 +8,7 @@
 
 #include <msp430.h> 
 
+// Define LED for easier referencing in code
 #define LED BIT0
 
 int main(void)
