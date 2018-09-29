@@ -12,7 +12,9 @@ There are a variety of clock select options on the board, the point of this lab 
 * 01 - ACLK
 * 10 - SMCLK
 * 11 - INCLK
+
 This was set through TACTL = TASSEL_1.  However, these clocks move fast, so their value are divided with an internal divider (ID_x).
+
 * 00 - /1
 * 01 - /2
 * 10 - /4
