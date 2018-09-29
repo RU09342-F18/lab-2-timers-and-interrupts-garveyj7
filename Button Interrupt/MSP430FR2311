@@ -11,7 +11,6 @@
 int main(void)
 {
     // Stop watchdog timer
-
     WDTCTL = WDTPW | WDTHOLD;
     // Sets Pin 1.0 to be output
     P1DIR |= BIT0;
@@ -23,7 +22,7 @@ int main(void)
     // Sets Pin 1.1 to pull up resistor
     P1OUT |= BIT1;
 
-    // Set LEDs off initially
+    // Set LED off initially
     P1OUT |= BIT0;
 
     // Enables interrupt on button
@@ -58,7 +57,6 @@ int main(void)
 #pragma vector = PORT1_VECTOR
 __interrupt void Port_1(void)
 {
-
     TB0CCR0 -= 10000;
     // Remove flag
     P1IFG &= ~BIT1;
